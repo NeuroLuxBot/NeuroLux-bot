@@ -50,7 +50,6 @@ def get_services_menu():
 
 def get_extra_menu():
     return ReplyKeyboardMarkup([
-        [KeyboardButton("Скидки / Акции")],
         [KeyboardButton("Оставить отзыв")],
         [KeyboardButton("Назад в меню")]
     ], resize_keyboard=True)
