@@ -72,7 +72,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = user.id
         username = user.username or user.full_name
 
-        if text == "Заказать дизайн / монтаж":
+        if text == "Заказать дизайн / монтаж/ии-услуги":
             await update.message.reply_text("Выберите нужную услугу:", reply_markup=get_services_menu())
 
         elif text in [
@@ -110,14 +110,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         elif text == "Дополнительно":
             await update.message.reply_text("🔍 Дополнительные опции:", reply_markup=get_extra_menu())
-
-        elif text == "Скидки / Акции":
-            await update.message.reply_text(
-                "🎁 Специальные предложения:\n\n"
-                "• 15% скидка на первый заказ\n"
-                "• Накопительная скидка: +5% за каждый 3-й заказ (максимум 15%)\n"
-                "• Персональные бонусы для постоянных клиентов"
-            )
 
         elif text == "Оставить отзыв":
             await update.message.reply_text(
