@@ -4,6 +4,8 @@ import json
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
+from counter import increment_counter  # <-- счётчик всех заявок
+
 # === Настройка логирования ===
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -85,13 +87,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             orders[str(user_id)] = user_orders
             save_orders(orders)
 
-            await update.message.reply_text("✅ Спасибо! В течение 20 минут с вами свяжется наш менеджер, по поводу работы с вашим заказаом. ")
+            total_requests = increment_counter()
+            print(f"[DEBUG] total_requests: {total_requests}")
+
+            await update.message.reply_text("✅ Спасибо! В течение 20 минут с вами свяжется наш менеджер по поводу вашего заказа.")
             await context.bot.send_message(
                 chat_id=context.bot_data["ADMIN_ID"],
                 text=f"🚨 Новая заявка: {text}\n"
                      f"👤 Пользователь: {username}\n"
                      f"🆔 ID: {user_id}\n"
-                     f"📦 Всего заказов: {user_orders}"
+                     f"📦 Всего заказов: {user_orders}\n"
+                     f"📊 Всего заявок за сессию: {total_requests}"
             )
 
         elif text == "Портфолио работ":
