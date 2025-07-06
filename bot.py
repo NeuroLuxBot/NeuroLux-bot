@@ -47,14 +47,14 @@ def get_services_menu():
         [KeyboardButton("Дизайн-логотипа/аватарки")],
         [KeyboardButton("Полное оформление профиля под ключ")],
         [KeyboardButton("Дизайн-превью")],
-        [KeyboardButton("Обработка фото/ретушь")]
-        [KeyboardButton("Добавление субтитров")]
-        [KeyboardButton("Создание-ИИ асистента gpts")]
-        [KeyboardButton("Создание-сайта")]
-        [KeyboardButton("Клонирование голоса-озвучка")]
-        [KeyboardButton("Создание-ИИ аватара")]
-        [KeyboardButton("Создание-ИИ бота")]
-        [KeyboardButton("Создание-Telegram бота")]
+        [KeyboardButton("Обработка фото/ретушь")],
+        [KeyboardButton("Добавление субтитров")],
+        [KeyboardButton("Создание-ИИ асистента gpts")],
+        [KeyboardButton("Создание-сайта")],
+        [KeyboardButton("Клонирование голоса-озвучка")],
+        [KeyboardButton("Создание-ИИ аватара")],
+        [KeyboardButton("Создание-ИИ бота")],
+        [KeyboardButton("Создание-Telegram бота")],
         [KeyboardButton("Другое")]
     ], resize_keyboard=True)
 
