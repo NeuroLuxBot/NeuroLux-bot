@@ -40,11 +40,17 @@ def get_main_menu():
         [KeyboardButton("Сайт(больше о нас)")]
     ], resize_keyboard=True)
 
-def get_services_menu():
+def get_services_menu_montage():
     return ReplyKeyboardMarkup([
         [KeyboardButton("Видео для Tiktok / Instagram")],
         [KeyboardButton("Видео для Youtube")],
         [KeyboardButton("Рекламный ролик")],
+        [KeyboardButton("Другое (монтаж)")],
+        [KeyboardButton("Назад в меню")]
+    ], resize_keyboard=True)
+
+def get_services_menu_ai():
+    return ReplyKeyboardMarkup([
         [KeyboardButton("Обработка фото/ретушь")],
         [KeyboardButton("Добавление субтитров")],
         [KeyboardButton("Создание ИИ асистента gpts")],
@@ -53,12 +59,7 @@ def get_services_menu():
         [KeyboardButton("Создание ИИ аватара")],
         [KeyboardButton("Создание ИИ бота")],
         [KeyboardButton("Создание Telegram бота")],
-        [KeyboardButton("Другое")]
-    ], resize_keyboard=True)
-
-def get_extra_menu():
-    return ReplyKeyboardMarkup([
-        [KeyboardButton("Оставить отзыв")],
+        [KeyboardButton("Другое (ИИ)")],
         [KeyboardButton("Назад в меню")]
     ], resize_keyboard=True)
 
@@ -66,12 +67,12 @@ def get_extra_menu():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await update.message.reply_text(
-    "👋 Привет! Ты попал в NeuroLux — сервис, где ты получишь:\n"
-    "🔥 Бесплатный монтаж, или нейро-контент.\n"
-    "⏱️ Заявка займёт не больше 30 секунд.\n"
-    "👉 Выбери, что тебе нужно:",
-    reply_markup=get_main_menu())
-
+            "👋 Привет! Ты попал в NeuroLux — сервис, где ты получишь:\n"
+            "🔥 Бесплатный монтаж, или нейро-контент.\n"
+            "⏱️ Заявка займёт не больше 30 секунд.\n"
+            "👉 Выбери, что тебе нужно:",
+            reply_markup=get_main_menu()
+        )
     except Exception as e:
         logger.error(f"Ошибка в команде /start: {e}")
 
@@ -83,37 +84,36 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         username = user.username or user.full_name
 
         if text == "Заказать монтаж":
-            await update.message.reply_text("🎬 Отлично, выбери тип монтажа:", reply_markup=get_services_menu())
-        
+            await update.message.reply_text("🎬 Отлично, выбери тип монтажа:", reply_markup=get_services_menu_montage())
+
         elif text == "Заказать ИИ контент":
-            await update.message.reply_text("🤖 Отлично, выбери тип ИИ услуг:", reply_markup=get_services_menu())
+            await update.message.reply_text("🤖 Отлично, выбери тип ИИ услуг:", reply_markup=get_services_menu_ai())
 
         elif text in [
+            # Монтаж
+            "Видео для Tiktok / Instagram", "Видео для Youtube", "Рекламный ролик", "Другое (монтаж)",
+            # ИИ
+            "Обработка фото/ретушь", "Клонирование голоса-озвучка", "Добавление субтитров", "Создание сайта",
+            "Создание ИИ асистента gpts", "Создание ИИ аватара", "Создание ИИ бота", "Создание Telegram бота", "Другое (ИИ)"
+        ]:
+            orders = load_orders()
+            user_orders = orders.get(str(user_id), 0)
+            user_orders += 1
+            orders[str(user_id)] = user_orders
+            save_orders(orders)
 
-    # Монтаж
-    "Видео для Tiktok / Instagram", "Видео для Youtube", "Рекламный ролик", "Другое (монтаж)",
-    # ИИ
-    "Обработка фото/ретушь", "Клонирование голоса-озвучка", "Добавление субтитров", "Создание сайта",
-    "Создание ии ассистента gpts", "Создание ИИ аватара", "Создание ИИ бота", "Создание Telegram бота", "Другое (ИИ)"
-]:
-    orders = load_orders()
-    user_orders = orders.get(str(user_id), 0)
-    user_orders += 1
-    orders[str(user_id)] = user_orders
-    save_orders(orders)
+            total_requests = increment_counter()
+            print(f"[DEBUG] total_requests: {total_requests}")
 
-    total_requests = increment_counter()
-    print(f"[DEBUG] total_requests: {total_requests}")
-
-    await update.message.reply_text("✅ Спасибо! В течение 20 минут с вами свяжется наш менеджер.")
-    await context.bot.send_message(
-        chat_id=context.bot_data["ADMIN_ID"],
-        text=f"🚨 Новая заявка: {text}\n"
-             f"👤 Пользователь: {username}\n"
-             f"🆔 ID: {user_id}\n"
-             f"📦 Всего заказов: {user_orders}\n"
-             f"📊 Всего заявок за сессию: {total_requests}"
-    )
+            await update.message.reply_text("✅ Спасибо! В течение 20 минут с вами свяжется наш менеджер.")
+            await context.bot.send_message(
+                chat_id=context.bot_data["ADMIN_ID"],
+                text=f"🚨 Новая заявка: {text}\n"
+                     f"👤 Пользователь: {username}\n"
+                     f"🆔 ID: {user_id}\n"
+                     f"📦 Всего заказов: {user_orders}\n"
+                     f"📊 Всего заявок за сессию: {total_requests}"
+            )
 
         elif text == "Портфолио работ":
             await update.message.reply_text(
