@@ -89,9 +89,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         elif text == "Заказать ИИ контент":
             await update.message.reply_text("🤖 Отлично, выбери тип ИИ услуг:
-", reply_markup=get_ai_services_menu())
+", reply_markup=get_services_menu())
 
         elif text in [
+
     # Монтаж
     "Видео для Tiktok / Instagram", "Видео для Youtube", "Рекламный ролик", "Другое (монтаж)",
     # ИИ
