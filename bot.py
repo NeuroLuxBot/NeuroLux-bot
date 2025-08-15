@@ -83,12 +83,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         username = user.username or user.full_name
 
         if text == "Заказать монтаж":
-            await update.message.reply_text("🎬 Отлично, выбери тип монтажа:
-", reply_markup=get_services_menu())
+            await update.message.reply_text("🎬 Отлично, выбери тип монтажа:", reply_markup=get_services_menu())
         
         elif text == "Заказать ИИ контент":
-            await update.message.reply_text("🤖 Отлично, выбери тип ИИ услуг:
-", reply_markup=get_services_menu())
+            await update.message.reply_text("🤖 Отлично, выбери тип ИИ услуг:", reply_markup=get_services_menu())
 
         elif text in [
 
