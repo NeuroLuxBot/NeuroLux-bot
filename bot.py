@@ -1,7 +1,7 @@
 import os
 import logging
 import json
-from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
 from counter import increment_counter  # <-- счётчик всех заявок
@@ -32,35 +32,35 @@ def save_orders(data: dict):
 
 # === Меню ===
 def get_main_menu():
-    return ReplyKeyboardMarkup([
-        [KeyboardButton("Заказать монтаж")],
-        [KeyboardButton("Заказать ИИ контент")],
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("Заказать монтаж")],
+        [InlineKeyboardButton("Заказать ИИ контент")],
         [KeyboardButton("Связаться с менеджером")],
         [KeyboardButton("Портфолио работ")],
         [KeyboardButton("Сайт(больше о нас)")]
     ], resize_keyboard=True)
 
 def get_services_menu_montage():
-    return ReplyKeyboardMarkup([
-        [KeyboardButton("Видео для Tiktok / Instagram")],
-        [KeyboardButton("Видео для Youtube")],
-        [KeyboardButton("Рекламный ролик")],
-        [KeyboardButton("Другое (монтаж)")],
-        [KeyboardButton("Назад в меню")]
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("Видео для Tiktok / Instagram")],
+        [InlineKeyboardButton("Видео для Youtube")],
+        [InlineKeyboardButton("Рекламный ролик")],
+        [InlineKeyboardButton("Другое (монтаж)")],
+        [InlineKeyboardButton("Назад в меню")]
     ], resize_keyboard=True)
 
 def get_services_menu_ai():
-    return ReplyKeyboardMarkup([
-        [KeyboardButton("Обработка фото/ретушь")],
-        [KeyboardButton("Добавление субтитров")],
-        [KeyboardButton("Создание ИИ асистента gpts")],
-        [KeyboardButton("Создание сайта")],
-        [KeyboardButton("Клонирование голоса-озвучка")],
-        [KeyboardButton("Создание ИИ аватара")],
-        [KeyboardButton("Создание ИИ бота")],
-        [KeyboardButton("Создание Telegram бота")],
-        [KeyboardButton("Другое (ИИ)")],
-        [KeyboardButton("Назад в меню")]
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("Обработка фото/ретушь")],
+        [InlineKeyboardButton("Добавление субтитров")],
+        [InlineKeyboardButton("Создание ИИ асистента gpts")],
+        [InlineKeyboardButton("Создание сайта")],
+        [InlineKeyboardButton("Клонирование голоса-озвучка")],
+        [InlineKeyboardButton("Создание ИИ аватара")],
+        [InlineKeyboardButton("Создание ИИ бота")],
+        [InlineKeyboardButton("Создание Telegram бота")],
+        [InlineKeyboardButton("Другое (ИИ)")],
+        [InlineKeyboardButton("Назад в меню")]
     ], resize_keyboard=True)
 
 # === Обработчики команд ===
