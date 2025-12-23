@@ -47,12 +47,10 @@ def save_orders(data: dict):
         logger.error(f"Ошибка сохранения данных: {e}")
 
 
-# === Главное меню (клавиатура снизу) ===
-def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
+# === Нижнее меню (только инфо-кнопки) ===
+def get_info_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton("Заказать монтаж")],
-            [KeyboardButton("Заказать ИИ контент")],
             [KeyboardButton("Связаться с менеджером")],
             [KeyboardButton("Портфолио работ")],
             [KeyboardButton("Сайт(больше о нас)")],
@@ -61,7 +59,17 @@ def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
     )
 
 
-# === Inline-меню: Монтаж (кнопки под сообщением) ===
+# === Inline выбор на старте ===
+def get_start_inline_menu() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("🎬 Монтаж", callback_data="OPEN_MONTAGE")],
+            [InlineKeyboardButton("🤖 ИИ контент", callback_data="OPEN_AI")],
+        ]
+    )
+
+
+# === Inline-меню: Монтаж ===
 def get_montage_inline_menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
@@ -69,12 +77,12 @@ def get_montage_inline_menu() -> InlineKeyboardMarkup:
             [InlineKeyboardButton("Видео для YouTube", callback_data="M_YT")],
             [InlineKeyboardButton("Рекламный ролик", callback_data="M_AD")],
             [InlineKeyboardButton("Другое (монтаж)", callback_data="M_OTHER")],
-            [InlineKeyboardButton("⬅️ Назад в меню", callback_data="BACK_MAIN")],
+            [InlineKeyboardButton("⬅️ Назад", callback_data="BACK_START")],
         ]
     )
 
 
-# === Inline-меню: ИИ (кнопки под сообщением) ===
+# === Inline-меню: ИИ ===
 def get_ai_inline_menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
@@ -87,7 +95,7 @@ def get_ai_inline_menu() -> InlineKeyboardMarkup:
             [InlineKeyboardButton("Создание ИИ бота", callback_data="A_AI_BOT")],
             [InlineKeyboardButton("Создание Telegram бота", callback_data="A_TG_BOT")],
             [InlineKeyboardButton("Другое (ИИ)", callback_data="A_OTHER")],
-            [InlineKeyboardButton("⬅️ Назад в меню", callback_data="BACK_MAIN")],
+            [InlineKeyboardButton("⬅️ Назад", callback_data="BACK_START")],
         ]
     )
 
@@ -98,17 +106,9 @@ async def register_order_and_notify(
     context: ContextTypes.DEFAULT_TYPE,
     service_title: str,
 ):
-    user = None
-    user_id = None
-    username = None
-
-    if update.callback_query:
-        user = update.callback_query.from_user
-    elif update.message:
-        user = update.message.from_user
-
-    if not user:
-        return
+    query = update.callback_query
+    user = query.from_user if query else update.effective_user
+    chat_id = update.effective_chat.id
 
     user_id = user.id
     username = user.username or user.full_name
@@ -121,17 +121,14 @@ async def register_order_and_notify(
     total_requests = increment_counter()
     logger.info(f"New order: {service_title} | user={user_id} total_requests={total_requests}")
 
-    # Сообщение пользователю
-    if update.callback_query:
-        await update.callback_query.message.reply_text(
-            "✅ Спасибо! В течение 20 минут с вами свяжется наш менеджер."
-        )
-    else:
-        await update.message.reply_text(
-            "✅ Спасибо! В течение 20 минут с вами свяжется наш менеджер."
-        )
+    # Пользователю
+    await context.bot.send_message(
+        chat_id=chat_id,
+        text="✅ Спасибо! В течение 20 минут с вами свяжется наш менеджер.",
+        reply_markup=get_info_keyboard()
+    )
 
-    # Сообщение админу
+    # Админу
     admin_id = context.bot_data.get("ADMIN_ID")
     if admin_id:
         await context.bot.send_message(
@@ -148,37 +145,29 @@ async def register_order_and_notify(
 
 # === /start ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # 1) стартовое сообщение + inline “Монтаж / ИИ”
     await update.message.reply_text(
         "👋 Привет! Ты попал в NeuroLux — сервис, где ты получишь:\n"
         "🔥 Бесплатный монтаж или нейро-контент.\n"
         "⏱️ Заявка займёт не больше 30 секунд.\n"
         "👉 Выбери, что тебе нужно:",
-        reply_markup=get_main_menu_keyboard()
+        reply_markup=get_start_inline_menu()
+    )
+    # 2) показать нижнее инфо-меню (без повторяющихся “заказать ...”)
+    await update.message.reply_text(
+        "ℹ️ Инфо-кнопки снизу:",
+        reply_markup=get_info_keyboard()
     )
 
 
-# === Текстовые сообщения (клавиатура) ===
+# === Текстовые сообщения (только нижняя клавиатура) ===
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (update.message.text or "").strip()
 
-    if text == "Заказать монтаж":
-        await update.message.reply_text(
-            "🎬 Отлично, выбери тип монтажа:",
-            reply_markup=get_montage_inline_menu()
-        )
-        return
-
-    if text == "Заказать ИИ контент":
-        await update.message.reply_text(
-            "🤖 Отлично, выбери тип ИИ услуг:",
-            reply_markup=get_ai_inline_menu()
-        )
-        return
-
     if text == "Портфолио работ":
         await update.message.reply_text(
-            "🎨 Наши работы можно посмотреть здесь:\nhttps://t.me/neurolux2025",
-            reply_markup=get_main_menu_keyboard()
+            "🎨 Наши работы:\nhttps://t.me/neurolux2025",
+            reply_markup=get_info_keyboard()
         )
         return
 
@@ -186,10 +175,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "🕒 Ожидайте — с вами свяжется менеджер в ближайшее время, "
             "либо можете сами ему написать: @iksan0v",
-            reply_markup=get_main_menu_keyboard()
+            reply_markup=get_info_keyboard()
         )
         admin_id = context.bot_data.get("ADMIN_ID")
-        user = update.message.from_user
+        user = update.effective_user
         username = user.username or user.full_name
         if admin_id:
             await context.bot.send_message(
@@ -201,13 +190,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if text == "Сайт(больше о нас)":
         await update.message.reply_text(
             "📝 Сайт (больше о нас):\nhttps://montazh-i-oformlenie-i-jcylmrg.gamma.site/",
-            reply_markup=get_main_menu_keyboard()
+            reply_markup=get_info_keyboard()
         )
         return
 
+    # если человек пишет что-то ещё — направляем на /start
     await update.message.reply_text(
-        "ℹ️ Выбери действие из меню ниже.",
-        reply_markup=get_main_menu_keyboard()
+        "ℹ️ Для заказа нажми /start и выбери услугу кнопками под сообщением.",
+        reply_markup=get_info_keyboard()
     )
 
 
@@ -234,27 +224,37 @@ SERVICE_MAP = {
 async def handle_inline(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = query.data
-
     await query.answer()
 
-    if data == "BACK_MAIN":
-        # Можно “снять” inline-меню, чтобы не висело
-        try:
-            await query.message.edit_reply_markup(reply_markup=None)
-        except Exception:
-            pass
-
+    # Открытие подменю
+    if data == "OPEN_MONTAGE":
         await query.message.reply_text(
-            "🏠 Главное меню:",
-            reply_markup=get_main_menu_keyboard()
+            "🎬 Отлично, выбери тип монтажа:",
+            reply_markup=get_montage_inline_menu()
         )
         return
 
+    if data == "OPEN_AI":
+        await query.message.reply_text(
+            "🤖 Отлично, выбери тип ИИ услуг:",
+            reply_markup=get_ai_inline_menu()
+        )
+        return
+
+    # Назад к старту (inline “Монтаж / ИИ”)
+    if data == "BACK_START":
+        await query.message.reply_text(
+            "👉 Выбери, что тебе нужно:",
+            reply_markup=get_start_inline_menu()
+        )
+        return
+
+    # Регистрация заявки
     service_title = SERVICE_MAP.get(data)
     if not service_title:
         await query.message.reply_text(
-            "⚠️ Неизвестная кнопка. Открой меню заново.",
-            reply_markup=get_main_menu_keyboard()
+            "⚠️ Неизвестная кнопка. Нажми /start заново.",
+            reply_markup=get_info_keyboard()
         )
         return
 
